@@ -24,7 +24,7 @@ semaphore_test(void) {
   printf(stdout, "A\n");
   pid = fork();
   if (pid) {
-//	  sleep(5);
+//	 sleep(5);
    sem_wait(sem);
    printf(stdout, "C\n");
    wait();

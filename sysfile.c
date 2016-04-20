@@ -21,6 +21,17 @@ int sem_wait (int sn);
 int sem_post (int sn);
 int sem_alloc (void);
 
+int cond_alloc(void);
+int cond_set(int, int);
+int cond_get(int);
+int cond_destroy(int);
+int cond_wait(int);
+int cond_signal(int);
+int cond_broadcast(int);
+
+
+
+
 struct semaphore {
   struct spinlock lock;
   int count;
@@ -78,6 +89,74 @@ sys_sem_post(void)
    sem_post(sn); 
    return 0;
 }
+
+// Add condition system call
+int
+sys_cond_alloc(void)    
+{
+    return cond_alloc();
+}
+
+int
+sys_cond_set(void)
+{
+  int sn, n;
+    if(argint(0, &sn) < 0 || argint(1, &n) < 0)
+      return -1;
+  cond_set(sn,n);
+  return 0;
+}
+
+int
+sys_cond_get(void)
+{
+  int sn;
+  if(argint(0, &sn) < 0)
+    return -1;
+  return cond_get(sn);
+}
+
+int
+sys_cond_destroy(void)
+{
+  int sn;
+  if(argint(0, &sn) < 0)
+    return -1;
+  cond_destroy(sn);
+  return 0;
+}
+
+int
+sys_cond_wait(void)
+{
+  int sn;
+  if(argint(0, &sn) < 0)
+    return -1;
+  cond_wait(sn);
+  return 0;
+}
+
+int
+sys_cond_signal(void)
+{
+  int sn;
+  if(argint(0, &sn) < 0)
+    return -1;
+  cond_signal(sn);
+  return 0;
+}
+
+int
+sys_cond_broadcast(void)
+{
+  int sn;
+  if(argint(0, &sn) < 0)
+    return -1;
+  cond_broadcast(sn);
+  return 0;
+}
+
+
 
 
 // Fetch the nth word-sized system call argument as a file descriptor

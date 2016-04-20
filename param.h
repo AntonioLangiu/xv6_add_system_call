@@ -10,4 +10,4 @@
 #define MAXARG       32  // max exec arguments
 #define LOGSIZE      10  // max data sectors in on-disk log
 #define NSEM_MAX     20  // max number of semaphores
-
+#define NCOND_MAX    20  // max number of conditions

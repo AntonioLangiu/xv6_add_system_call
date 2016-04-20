@@ -18,6 +18,7 @@ int nextpid = 1;
 extern void forkret(void);
 extern void trapret(void);
 
+static void wakeupall(void *chan);
 static void wakeup1(void *chan);
 
 void
@@ -186,14 +187,14 @@ exit(void)
   acquire(&ptable.lock);
 
   // Parent might be sleeping in wait().
-  wakeup1(proc->parent);
+  wakeupall(proc->parent);
 
   // Pass abandoned children to init.
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
     if(p->parent == proc){
       p->parent = initproc;
       if(p->state == ZOMBIE)
-        wakeup1(initproc);
+        wakeupall(initproc);
     }
   }
 
@@ -241,7 +242,7 @@ wait(void)
       return -1;
     }
 
-    // Wait for children to exit.  (See wakeup1 call in proc_exit.)
+    // Wait for children to exit.  (See wakeupall call in proc_exit.)
     sleep(proc, &ptable.lock);  //DOC: wait-sleep
   }
 }
@@ -375,10 +376,23 @@ sleep(void *chan, struct spinlock *lk)
 }
 
 //PAGEBREAK!
+// function to wake up just one process from a chan
+
+// Wake up just on process sleeping on a chain
+// The ptable lock must be held
+static void wakeup1 (void* chan) {
+  struct proc *p;
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+    if(p->state == SLEEPING && p->chan == chan) {
+      p->state = RUNNABLE;
+      break;
+    }
+}
+
 // Wake up all processes sleeping on chan.
 // The ptable lock must be held.
 static void
-wakeup1(void *chan)
+wakeupall(void *chan)
 {
   struct proc *p;
 
@@ -390,6 +404,15 @@ wakeup1(void *chan)
 // Wake up all processes sleeping on chan.
 void
 wakeup(void *chan)
+{
+  acquire(&ptable.lock);
+  wakeupall(chan);
+  release(&ptable.lock);
+}
+
+// Wake up just one process sleeping on chan.
+void
+wakeuponeof(void *chan)
 {
   acquire(&ptable.lock);
   wakeup1(chan);

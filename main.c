@@ -33,6 +33,7 @@ main(void)
   fileinit();      // file table
 
   semaphore_init();      // file table
+  cond_init();
 
   iinit();         // inode cache
   ideinit();       // disk

@@ -28,6 +28,14 @@ int sem_init (int sn, int n);
 int sem_destroy (int sn);
 int sem_wait (int sn);
 int sem_post (int sn);
+int cond_alloc(void);
+int cond_set(int, int);
+int cond_get(int);
+int cond_destroy(int);
+int cond_wait(int);
+int cond_signal(int);
+int cond_broadcast(int);
+
 
 // ulib.c
 int stat(char*, struct stat*);

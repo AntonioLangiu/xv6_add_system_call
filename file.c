@@ -22,6 +22,22 @@ struct {
 } semaphore_table;
 
 
+// cond structures
+struct cond {
+  struct spinlock lock;
+  int val;
+  int count;
+  int ref;
+  uint q;
+};
+
+struct {
+  struct spinlock lock;
+  struct cond cond[NCOND_MAX];
+} cond_table;
+
+
+
 struct devsw devsw[NDEV];
 struct {
   struct spinlock lock;
@@ -108,6 +124,92 @@ sem_post(int sn)
      wakeup(&s->q);
    release(&s->lock); 
    return 0;
+}
+
+
+// cond system call
+
+void cond_init (void) {
+  initlock(&cond_table.lock, "cond_table");
+  memset (&(cond_table.cond), 0, sizeof (struct cond)*NCOND_MAX);
+}
+
+int cond_alloc(void) {
+  struct cond *s;
+  int k = 0;
+  acquire(&cond_table.lock);
+  for(s = cond_table.cond; s < cond_table.cond + NCOND_MAX; s++){
+    if(s->ref == 0){
+      s->ref = 1;
+      s->count = 0;
+      release(&cond_table.lock);
+      return k;
+    }
+		k++;
+  }
+  release(&cond_table.lock);
+  return -1;
+}
+
+int cond_set(int cond, int val) {
+  struct cond *s;
+  s = &cond_table.cond[cond];
+  acquire(&s->lock);
+  s->val = val;
+  release(&s->lock);
+  return val;
+}
+
+int cond_get(int cond) {
+  int val;
+  struct cond *s;
+  s = &cond_table.cond[cond];
+  acquire(&s->lock);
+  val = s->val;
+  release(&s->lock);
+  return val;
+}
+
+int cond_destroy(int cond) {
+  struct cond *s;
+  s = &cond_table.cond[cond];
+  acquire(&s->lock);
+  //check if someone is waiting on this cond
+  s->ref = 0;
+  release(&s->lock);
+  return 0;
+}
+int cond_wait(int cond) {
+  struct cond *s;
+  s = &cond_table.cond[cond];
+  acquire(&s->lock);
+  s->count--;
+  if (s->count < 0)
+    sleep(&s->q, &s->lock); 
+  release(&s->lock);
+  return 0;
+}
+int cond_signal(int cond) {
+  struct cond *s;  
+  s = &cond_table.cond[cond];
+  acquire(&s->lock);
+  if (s->count <= 0)
+    wakeuponeof(&s->q);
+  s->count++;
+  release(&s->lock); 
+  return 0;
+}
+
+int cond_broadcast(int cond) {
+  struct cond *s;  
+  s = &cond_table.cond[cond];
+  acquire(&s->lock);
+  if (s->count <= 0) {
+    wakeup(&s->q);
+  }
+  s->count = 0;
+  release(&s->lock); 
+  return 0;
 }
 
 // Allocate a file structure.

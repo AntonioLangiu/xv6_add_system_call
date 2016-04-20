@@ -32,7 +32,11 @@ int             fileread(struct file*, char*, int n);
 int             filestat(struct file*, struct stat*);
 int             filewrite(struct file*, char*, int n);
 
-void			semaphore_init(void);
+// semaphore
+void			      semaphore_init(void);
+
+// condition
+void            cond_init(void);
 
 // fs.c
 void            readsb(int dev, struct superblock *sb);
@@ -117,6 +121,7 @@ void            sleep(void*, struct spinlock*);
 void            userinit(void);
 int             wait(void);
 void            wakeup(void*);
+void            wakeuponeof(void*);
 void            yield(void);
 
 // swtch.S

@@ -104,6 +104,16 @@ extern int sys_sem_destroy(void);
 extern int sys_sem_wait(void);
 extern int sys_sem_post(void);
 
+extern int sys_cond_alloc(void);
+extern int sys_cond_set(void);
+extern int sys_cond_get(void);
+extern int sys_cond_destroy(void);
+extern int sys_cond_wait(void);
+extern int sys_cond_signal(void);
+extern int sys_cond_broadcast(void);
+
+
+
 static int (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
 [SYS_exit]    sys_exit,
@@ -131,6 +141,13 @@ static int (*syscalls[])(void) = {
 [SYS_link]    sys_link,
 [SYS_mkdir]   sys_mkdir,
 [SYS_close]   sys_close,
+[SYS_cond_alloc] sys_cond_alloc,
+[SYS_cond_set] sys_cond_set,
+[SYS_cond_get] sys_cond_get,
+[SYS_cond_destroy] sys_cond_destroy,
+[SYS_cond_wait] sys_cond_wait,
+[SYS_cond_signal] sys_cond_signal,
+[SYS_cond_broadcast] sys_cond_broadcast
 };
 
 void
